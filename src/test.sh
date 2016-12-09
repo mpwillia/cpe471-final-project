@@ -1,0 +1,2 @@
+cd ..
+sh ./test.sh

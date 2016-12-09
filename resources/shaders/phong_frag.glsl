@@ -10,10 +10,10 @@ uniform vec3 MatEmis;
 uniform float shine;
 
 uniform int num_lights;
-uniform vec3 light_positions[10];
-uniform vec3 light_colors[10];
-uniform vec3 light_falloffs[10];
-uniform float light_brightness[10];
+uniform vec3 light_positions[20];
+uniform vec3 light_colors[20];
+uniform vec3 light_falloffs[20];
+uniform float light_brightness[20];
 
 uniform float ambient_scale;
 uniform float global_brightness;
@@ -41,7 +41,7 @@ void main()
    // Begin computing our reflected color
    vec3 refl_color = MatAmb * ambient_scale;
 
-   for(int i = 0; i < num_lights && i < 10; i++) {
+   for(int i = 0; i < num_lights && i < 20; i++) {
 
       if(num_lights_debug)
          refl_color += vec3(0,0,debug_step);

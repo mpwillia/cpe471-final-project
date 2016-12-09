@@ -14,8 +14,8 @@ float sigmoid(float x);
 
 typedef enum NetworkType {
    XOR, OR, AND, NOT,
-   RAND_4X4, RAND_8X8,
-   RAND_LARGE, RAND_HUGE
+   RAND_4X4, RAND_8X8, RAND_LARGE, RAND_HUGE,
+   FULL_4X4
 } NetworkType;
 
 
@@ -89,6 +89,10 @@ public:
    // Get Network Information
    unsigned int get_num_layers() const;
    unsigned int get_input_size() const;
+
+   // Printing Info
+   void print_network_state() const;
+
 private:
    unsigned int num_layers;
    unsigned int input_size;

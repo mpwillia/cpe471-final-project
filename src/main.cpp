@@ -277,21 +277,13 @@ static void init()
    
    phong->addUniform("size");
 
-
+   
+   // Create Network
    auto make_net = [](NetworkType type) {
       return make_shared<NetworkRenderer>(default_network(type), sphere, connection, phong);
    };
    
-   networks.push_back(make_net(RAND_4X4));
-
-   /*
-   auto nr_xor = make_shared<NetworkRenderer>(default_network(XOR), sphere, connection, phong);
-   auto nr_or = make_shared<NetworkRenderer>(default_network(OR), sphere, connection, phong);
-   auto nr_and = make_shared<NetworkRenderer>(default_network(AND), sphere, connection, phong);
-   auto rand_4x4 = make_shared<NetworkRenderer>(default_network(RAND_4X4), sphere, connection, phong);
-   auto rand_large = make_shared<NetworkRenderer>(default_network(RAND_LARGE), sphere, connection, phong);
-   */
-   //auto rand_huge = make_shared<NetworkRenderer>(default_network(RAND_HUGE), sphere, connection, phong);
+   networks.push_back(make_net(FULL_4X4));
 
 }
 

@@ -161,6 +161,7 @@ private:
 
    unsigned int get_current_layer() const;
    float get_current_layer_progress() const;
+   bool should_light_layer(unsigned int layer_num) const;
 
 
    RenderSettings render_settings;

@@ -21,7 +21,10 @@
 
 using namespace std;
 
-float SPACING_SCALE = 3.0;
+float SPACING_SCALE = 4.0;
+
+const int lights_per_conn = 16;
+const int lights_per_neuron = 16;
 
 const char* movement_type_str(int enumVal) {
    return MovementTypeStrings[enumVal];
@@ -136,6 +139,8 @@ void NetworkRenderer::set_input(const shared_ptr<Matrix> input) {
    if(this->network->input() == nullptr || !this->network->input()->equals(input)) {
       this->network->compute(input);
       this->internal_time = -this->render_settings.start_delay;
+
+      this->network->print_network_state();
    } 
 } 
 
@@ -185,7 +190,7 @@ void NetworkRenderer::render(vec3 position,
 
 // Private - Utilities --------------------------------------------------------
 float NetworkRenderer::get_neuron_spacing(NeuronProps props) const {
-   return props.base_size * (SPACING_SCALE - 1.0);
+   return props.base_size * (SPACING_SCALE - 0.0);
 } 
 
 LayerRenderInfo NetworkRenderer::get_layer_render_info(unsigned int layer_num) const {
@@ -210,6 +215,34 @@ LayerRenderInfo NetworkRenderer::get_layer_render_info(unsigned int layer_num) c
    } 
 
    return {layer_size, layer_output, layer_weights, layer_positions, neuron_props};
+} 
+
+unsigned int NetworkRenderer::get_current_layer() const {
+   int layer_num = (int)this->internal_time;
+   if(layer_num < 0) {
+      return 0;
+   } else if(layer_num >= this->network->get_num_layers()) {
+      return this->network->get_num_layers()-1;
+   } else {
+      return layer_num; 
+   } 
+} 
+
+float NetworkRenderer::get_current_layer_progress() const {
+   int layer_num = (int)this->internal_time;
+   float prop_amt = this->internal_time - layer_num;
+   if(layer_num < 0 || prop_amt < 0) {
+      return 0.0;
+   } else if(layer_num >= this->network->get_num_layers()) {
+      return 1.0;
+   } else {
+      return prop_amt; 
+   } 
+} 
+
+bool NetworkRenderer::should_light_layer(unsigned int layer_num) const {
+   int current_layer = this->get_current_layer();
+   return abs(current_layer - (int)layer_num) <= 2;
 } 
 
 // Private - Precomputations --------------------------------------------------
@@ -299,6 +332,11 @@ void NetworkRenderer::compute_neuron_connection(unsigned int layer_num) {
 
 // Private - Computing Lighting -----------------------------------------------
 void NetworkRenderer::compute_propagation_lighting(shared_ptr<MatrixStack> M) {
+   
+   unsigned int layer_num = this->get_current_layer();
+   float prop_amt = this->get_current_layer_progress();
+
+   /*
    int layer_num = (int)this->internal_time;
    float prop_amt = this->internal_time - layer_num;
    
@@ -309,7 +347,8 @@ void NetworkRenderer::compute_propagation_lighting(shared_ptr<MatrixStack> M) {
       layer_num = this->network->get_num_layers()-1;
       prop_amt = 1.0;
    } 
-   
+   */
+
    switch(this->render_settings.move_type) {
       case COS:
          /* f(x) = (1 - cos(x * PI)) / 2.0
@@ -363,7 +402,7 @@ void NetworkRenderer::compute_propagation_lighting(shared_ptr<MatrixStack> M) {
          vec3 light_pos = vec3(M->topMatrix() * vec4(prop_pos, 1));
          this->lighting->add_light(light_pos, 
                                    start_layer_info.neuron_props.act_mat.diffuse, 
-                                   vec3(1,0.1,0.005), 
+                                   vec3(1,0.1,0.025), 
                                    brightness * 0.8);
       } 
       M->popMatrix();
@@ -445,7 +484,13 @@ void NetworkRenderer::render_layer_neurons(unsigned int layer_num,
          M->translate(layer_info.positions[i]);
          M->scale(vec3(neuron_size));
          
-         lighting->load_lights(this->prog, layer_info.positions[i], 10, this->layer_spacing*2);
+         if(this->should_light_layer(layer_num)) {
+            lighting->load_lights_near(this->prog, layer_info.positions[i], lights_per_neuron, -1);
+            //lighting->load_lights(this->prog);
+         } else {
+            lighting->load_zero_lights(this->prog);
+         } 
+
          glUniformMatrix4fv(this->prog->getUniform("M"), 1, GL_FALSE, value_ptr(M->topMatrix()));
 
          this->neuron_shape->draw(this->prog);
@@ -484,6 +529,9 @@ void NetworkRenderer::render_layer_connections(unsigned int layer_num,
    
    load_material(this->prog, layer_info.neuron_props.base_mat);
 
+   float layer_width = this->get_neuron_spacing(layer_info.neuron_props) * (layer_info.size+0);
+   float light_range = (layer_width > this->layer_spacing*2) ? layer_width : this->layer_spacing*2;
+
    for(int i = 0; i < layer_connections.size(); i++) {
       M->pushMatrix();
 
@@ -493,8 +541,16 @@ void NetworkRenderer::render_layer_connections(unsigned int layer_num,
          M->rotate(-conn_info.theta, vec3(0,1,0));
          M->rotate(M_PI/2.0, vec3(1,0,0));
          M->scale(vec3(conn_info.size, conn_info.length, conn_info.size));
+         
+         vec3 pos = vec3(M->topMatrix() * vec4(vec3(0), 1));
 
-         lighting->load_lights(this->prog, conn_info.pos, 10, this->layer_spacing*2);
+         if(this->should_light_layer(layer_num)) {
+            lighting->load_lights_near(this->prog, pos, lights_per_conn, -1);
+            //lighting->load_lights(this->prog);
+         } else {
+            lighting->load_zero_lights(this->prog);
+         }
+
          glUniform1f(prog->getUniform("size"), conn_info.size*0.5);
          glUniformMatrix4fv(this->prog->getUniform("M"), 1, GL_FALSE, value_ptr(M->topMatrix()));
 

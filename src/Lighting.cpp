@@ -5,6 +5,7 @@
 #include <set>
 #include <algorithm>
 #include <iterator>
+#include <cmath>
 #include <glm/gtc/type_ptr.hpp>
 #include <glm/gtc/matrix_transform.hpp>
 #include "Lighting.hpp"
@@ -37,16 +38,20 @@ void send_light_vector(shared_ptr<Program> prog, const vector<Light>& lights, fl
    glUniform3fv(prog->getUniform("light_colors"), num_lights, flat_colors);
    glUniform3fv(prog->getUniform("light_falloffs"), num_lights, flat_falloffs);
    glUniform1fv(prog->getUniform("light_brightness"), num_lights, flat_brightness);
-   
+      
    glUniform1f(prog->getUniform("global_brightness"), global_brightness);   
 } 
 
 bool light_cmp (const Light& lhs, const Light& rhs) {
-   if(lhs.pos.x == rhs.pos.x) {
-      return lhs.pos.y < rhs.pos.y; 
+
+   return lhs.pos.z < rhs.pos.z;
+   /*
+   if(lhs.pos.z == rhs.pos.z) {
+      return lhs.pos.x < rhs.pos.x; 
    } else {
-      return lhs.pos.x < rhs.pos.x;
-   } 
+      return lhs.pos.z < rhs.pos.z;
+   }
+   */
 };
 
 
@@ -92,43 +97,44 @@ void Lighting::clear_lights() {
 
 void Lighting::load_zero_lights(shared_ptr<Program> prog) const {
    glUniform1i(prog->getUniform("num_lights"), 0);
+   //glUniform1f(prog->getUniform("global_brightness"), 1.0);   
 } 
 
 void Lighting::load_lights(shared_ptr<Program> prog, float global_brightness) const {
    send_light_vector(prog, this->lights, global_brightness);
 } 
 
-void Lighting::load_lights(shared_ptr<Program> prog, vec3 obj_position, 
-                           int max_lights, float min_dist, float global_brightness) const {
+void Lighting::load_lights_near(shared_ptr<Program> prog, vec3 obj_position, 
+                                int max_lights, float max_dist, float global_brightness) const {
 
    if(max_lights > this->light_set.size())
       max_lights = this->light_set.size();
-
-   vec3 range = vec3(min_dist, min_dist, 0);
-   Light lower = {obj_position - range, vec3(0), vec3(0), 0};
-   Light upper = {obj_position + range, vec3(0), vec3(0), 0};
-
-   auto subset_start = this->light_set.lower_bound(lower);
-   auto subset_end = this->light_set.upper_bound(upper);
-
-   int num_lights = std::distance(subset_start, subset_end);
-   while(num_lights > max_lights) {
-      if(num_lights % 2 == 0) {
-         if(subset_start != this->light_set.begin()) 
-            subset_start++;
-         else
-            subset_end--;
-      } else {
-         if(subset_end != this->light_set.end())
-            subset_end--;
-         else
-            subset_start++;
-      } 
-      num_lights = std::distance(subset_start, subset_end);
-   } 
    
-   vector<Light> subset(subset_start, subset_end);
-   send_light_vector(prog, subset, global_brightness);
+   vector<Light> subset;
+   for(auto& light : this->lights) {
+      if(max_dist < 0 || distance(light.pos, obj_position) < max_dist)
+         subset.push_back(light);
+      
+      /*
+      if(max_dist < 0 || abs(light.pos.z - obj_position.z) < max_dist)
+         subset.push_back(light);
+      */
+   } 
+
+   if(subset.size() < max_lights) {
+      send_light_vector(prog, subset, global_brightness);
+   } else {
+
+      auto dist_cmp = [&](const Light& lhs, const Light& rhs) {
+         //return (abs(lhs.pos.z - obj_position.z) < (abs(rhs.pos.z - obj_position.z)));
+         return (distance(lhs.pos, obj_position) < distance(rhs.pos, obj_position));
+      };
+
+      sort(subset.begin(), subset.end(), dist_cmp);
+      
+      send_light_vector(prog, vector<Light>(subset.begin(), subset.begin()+max_lights), global_brightness);
+   }
+
 }
 
 

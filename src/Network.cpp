@@ -3,6 +3,7 @@
 #include <vector>
 #include <cstdlib>
 #include <ctime>
+#include <string>
 #include "Matrix.hpp"
 #include "Network.hpp"
 
@@ -234,6 +235,55 @@ shared_ptr<Matrix> Network::get_layer_biases(unsigned int layer_num) const {
 } 
 
 
+void Network::print_network_state() const {
+   printf("Current Network State\n");
+   this->net_input_mat->print("Input");
+   
+   for(int i = 0; i < this->num_layers; i++) {
+      string layer_name = "Layer " + to_string(i) + " Output";
+      this->layers[i].output()->print(layer_name.c_str());
+   }
+} 
+
+
+
+
+
+
+// Network Creation Functions -------------------------------------------------
+shared_ptr<Network> make_full_network(unsigned int input_size, unsigned int num_layers,
+                                        unsigned int layer_size) {
+   vector<unsigned int> layer_sizes;
+   vector<vector<float>> weights;
+   vector<vector<float>> biases;
+
+   for(int i = 0; i < num_layers; i++) {
+      vector<float> layer_weights;
+      vector<float> layer_biases;
+
+      for(int j = 0; j < layer_size; j++) {
+         
+         if(i == 0) {
+            for(int k = 0; k < input_size; k++) {
+               layer_weights.push_back(1);
+            } 
+         } else {
+            for(int k = 0; k < layer_size; k++) {
+               layer_weights.push_back(1);
+            } 
+         }
+         layer_biases.push_back(1);
+      }
+
+      weights.push_back(layer_weights);
+      biases.push_back(layer_biases);
+      layer_sizes.push_back(layer_size);
+   } 
+
+   return make_shared<Network>(input_size, sigmoid, layer_sizes, weights, biases);
+
+} 
+
 float rand_between(float min, float max) {
    return min + static_cast<float>(rand()) /(static_cast<float>(RAND_MAX/(max-min)));
 } 
@@ -330,7 +380,8 @@ shared_ptr<Network> default_network(NetworkType type) {
       case RAND_8X8: return  make_random_network(2, 8, 8, 5);
       case RAND_LARGE: return  make_random_network(2, 6, 50, 5);
       case RAND_HUGE: return  make_random_network(2, 8, 500, 5);
-
+      
+      case FULL_4X4: return make_full_network(2, 4, 4);
    } 
 } 
 

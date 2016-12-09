@@ -32,9 +32,11 @@ public:
    void clear_lights();
 
    void load_zero_lights(std::shared_ptr<Program> prog) const;
+
    void load_lights(std::shared_ptr<Program> prog, float global_brightness = 1.0) const;
-   void load_lights(std::shared_ptr<Program> prog, glm::vec3 obj_position, 
-                    int num_lights, float min_dist, float global_brightness = 1.0) const;
+
+   void load_lights_near(std::shared_ptr<Program> prog, glm::vec3 obj_position, 
+                         int num_lights, float min_dist, float global_brightness = 1.0) const;
    
 private:
    unsigned int max_lights;

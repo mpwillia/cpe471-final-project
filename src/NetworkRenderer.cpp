@@ -152,6 +152,7 @@ const shared_ptr<Lighting> NetworkRenderer::get_lighting() const {
 // Main Draw Function
 void NetworkRenderer::render(vec3 position, 
                              float ambient_scale, 
+                             float global_brightness,
                              shared_ptr<MatrixStack> P, 
                              shared_ptr<MatrixStack> V, 
                              shared_ptr<MatrixStack> M) {
@@ -163,10 +164,11 @@ void NetworkRenderer::render(vec3 position,
    this->internal_time += delta * this->render_settings.animation_speed;
 
    this->lighting->clear_lights();
+   this->lighting->set_global_brightness(global_brightness);
    //this->lighting->add_light(vec3(0,10,0), vec3(1), vec3(1,0,0), 1.0);
 
    this->ambient_scale = ambient_scale;
-   
+
    auto layer_outputs = this->network->layer_outputs();
    M->pushMatrix();
       M->translate(position);
@@ -335,19 +337,7 @@ void NetworkRenderer::compute_propagation_lighting(shared_ptr<MatrixStack> M) {
    
    unsigned int layer_num = this->get_current_layer();
    float prop_amt = this->get_current_layer_progress();
-
-   /*
-   int layer_num = (int)this->internal_time;
-   float prop_amt = this->internal_time - layer_num;
    
-   if(layer_num < 0 || prop_amt < 0) {
-      layer_num = 0;
-      prop_amt = 0.0;
-   } else if(layer_num >= this->network->get_num_layers()) {
-      layer_num = this->network->get_num_layers()-1;
-      prop_amt = 1.0;
-   } 
-   */
 
    switch(this->render_settings.move_type) {
       case COS:
@@ -391,7 +381,10 @@ void NetworkRenderer::compute_propagation_lighting(shared_ptr<MatrixStack> M) {
       vec3 prop_pos = ((1 - prop_amt) * start_pos) + (prop_amt * end_pos);
       
       float start_val = start_layer_info.output->at(start_idx);
-      float end_val = end_layer_info.output->at(end_idx);
+      
+      float end_weight = end_layer_info.weights->at(end_idx);
+      float end_val = start_val * end_weight;
+
       end_val = abs(end_val);
 
       float brightness = ((1-prop_amt) * start_val) + (prop_amt * end_val);
@@ -474,7 +467,7 @@ void NetworkRenderer::render_layer_neurons(unsigned int layer_num,
    LayerRenderInfo layer_info = this->get_layer_render_info(layer_num);
    float neuron_size = layer_info.neuron_props.base_size;
 
-   glUniform1f(prog->getUniform("size"), neuron_size*0.9);
+   glUniform1f(prog->getUniform("size"), neuron_size*1.0);
    load_material(this->prog, layer_info.neuron_props.base_mat);
 
    if(this->should_light_layer(layer_num)) {

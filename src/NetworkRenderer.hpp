@@ -97,7 +97,7 @@ public:
    void set_input(const std::shared_ptr<Matrix> input);
    
    // Main Draw Function
-   void render(glm::vec3 position, float ambient_scale,  
+   void render(glm::vec3 position, float ambient_scale, float global_brightness,
                std::shared_ptr<MatrixStack> P, std::shared_ptr<MatrixStack> V, 
                std::shared_ptr<MatrixStack> M);
 

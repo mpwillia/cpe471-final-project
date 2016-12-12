@@ -57,8 +57,8 @@ const float net_ani_step = 0.05;
 shared_ptr<Program> phong;
 
 // Global Lighting Information ------------------------------------------------
-//const float global_brightness = 1.0;
-const float default_ambient_scale = 0.25;
+const float global_brightness = 1.5;
+const float default_ambient_scale = 0.2;
 
 // Define our objects ---------------------------------------------------------
 shared_ptr<Shape> bunny;
@@ -224,8 +224,9 @@ static void init()
 	GLSL::checkVersion();
 
    // Define OpenGL Parameters ------------------------------------------------
-   vec3 clear_color = vec3(0.12f, 0.34f, 0.56f);
-   float bg_brightness = 0.5;
+   //vec3 clear_color = vec3(0.12f, 0.34f, 0.56f);
+   vec3 clear_color = vec3(0.13f, 0.13f, 0.14f);
+   float bg_brightness = 0.2 * global_brightness;
 
 	// Set background color.
    clear_color *= bg_brightness;
@@ -284,6 +285,7 @@ static void init()
       return make_shared<NetworkRenderer>(default_network(type), sphere, connection, phong);
    };
    
+   //networks.push_back(make_net(XOR));
    networks.push_back(make_net(FULL_4X4));
 
 }
@@ -337,6 +339,7 @@ static void render()
    vec3 net_base_pos = vec3(-20, -5, 15);
 
    auto global_lighting = make_shared<Lighting>();
+   global_lighting->set_global_brightness(global_brightness);
 
    // Place Objects Into World
    M->pushMatrix();
@@ -349,7 +352,7 @@ static void render()
       for(auto &net : networks) {
          net->set_input(test_case);
          net->set_render_settings(net_render_settings);
-         net->render(pos, default_ambient_scale, P,V,M);
+         net->render(pos, default_ambient_scale, global_brightness, P,V,M);
          global_lighting->add_lights(net->get_lighting());
          pos += net_spacing;
       } 

@@ -22,6 +22,12 @@ enum Keybinds {
    CAM_FASTER   = GLFW_KEY_F,
    CAM_FAST     = GLFW_KEY_C,
 
+   // Light Settings
+   BRIGHT_DOWN  = GLFW_KEY_COMMA,
+   BRIGHT_UP    = GLFW_KEY_PERIOD,
+   BRIGHT_RESET = GLFW_KEY_SLASH,
+   GLOBAL_LIGHT = GLFW_KEY_G,
+
    // Network Structures
    NET_BINOPS = GLFW_KEY_B,
    NET_RAND   = GLFW_KEY_N,
@@ -65,7 +71,12 @@ static string describe(Keybinds bind) {
 
       case CAM_FASTER : return "Super Speed (x3)";
       case CAM_FAST   : return "Warp Speed  (x9)";
-      
+
+      case BRIGHT_DOWN  : return "Decrease Brightness";
+      case BRIGHT_UP    : return "Increase Brightness";
+      case BRIGHT_RESET : return "Reset Brightness   ";
+      case GLOBAL_LIGHT : return "Toggle Global Light";
+
       case NET_BINOPS : return "Binary Operations ";
       case NET_RAND   : return "Random 4x4 Network";
 
@@ -101,8 +112,8 @@ static string describe(Keybinds bind) {
 static string keyname(int key) {
    switch(key) {
       case GLFW_KEY_SPACE: return "Space";
-      case GLFW_KEY_EQUAL: return "+";
-      case GLFW_KEY_MINUS: return "-";
+      //case GLFW_KEY_EQUAL: return "+";
+      //case GLFW_KEY_MINUS: return "-";
       default:
          return string(glfwGetKeyName(key,0));
    }  
@@ -118,15 +129,21 @@ static void print_keybind(Keybinds bind, const char* fmt = one_tab_fmt) {
 
 static void print_camera_keybindings() {
    printf("Camera Movement\n"); 
-   print_keybind(CAM_FORWARD);
-   print_keybind(CAM_BACKWARD);
-   print_keybind(CAM_LEFT);
-   print_keybind(CAM_RIGHT);
+   printf(one_tab_fmt, "General  : WASD");
    print_keybind(CAM_UP);
    print_keybind(CAM_DOWN);
    printf("\n");
    print_keybind(CAM_FASTER);
    print_keybind(CAM_FAST);
+   printf("\n");
+} 
+
+static void print_light_keybindings() {
+   printf("Light Settings\n");
+   print_keybind(BRIGHT_DOWN);
+   print_keybind(BRIGHT_UP);
+   print_keybind(BRIGHT_RESET);
+   print_keybind(GLOBAL_LIGHT);
    printf("\n");
 } 
 
@@ -166,6 +183,7 @@ static void print_animation_keybindings() {
 static void print_keybindings() {
    printf("--- Controls ---\n");
    print_camera_keybindings();
+   print_light_keybindings();
    print_net_structure_keybindings();
    print_net_input_keybindings();
    print_animation_keybindings();

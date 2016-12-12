@@ -44,6 +44,7 @@ vector<shared_ptr<NetworkRenderer>> networks;
 enum NetSetup {
    BINOPS, RAND
 };
+bool global_light = false;
 
 vector<float> case1 = {0,0};
 vector<float> case2 = {0,1};
@@ -60,8 +61,8 @@ const float net_ani_step = 0.05;
 shared_ptr<Program> phong;
 
 // Global Lighting Information ------------------------------------------------
-const float global_brightness = 1.0;
-const float default_ambient_scale = 0.5;
+float global_brightness = 1.0;
+float default_ambient_scale = 0.5;
 
 // Define our objects ---------------------------------------------------------
 shared_ptr<Shape> bunny;
@@ -146,6 +147,21 @@ static void key_callback(GLFWwindow *window, int key, int scancode, int action, 
          case CAM_FASTER: cam_speed *= speed_mult; break;
          case CAM_FAST: cam_speed *= speed_mult * speed_mult; break;
 
+         // Light Settings
+         case BRIGHT_DOWN: 
+            global_brightness -= 0.025; 
+            default_ambient_scale -= 0.05;
+            break;
+         case BRIGHT_UP: 
+            global_brightness += 0.025;
+            default_ambient_scale += 0.05;
+            break;
+         case BRIGHT_RESET: 
+            global_brightness = 1.0;
+            default_ambient_scale = 0.5;
+            break;
+         case GLOBAL_LIGHT: global_light = !global_light; break;
+
          // Network Structures
          case NET_BINOPS: load_net_setup(BINOPS); break;
          case NET_RAND: load_net_setup(RAND); break;
@@ -196,6 +212,14 @@ static void key_callback(GLFWwindow *window, int key, int scancode, int action, 
          case ANI_FASTER: net_render_settings.animation_speed += net_ani_step; break;
          case ANI_SLOWER: net_render_settings.animation_speed -= net_ani_step; break;
       } 
+   } 
+
+   if(global_brightness < 0.75) {
+      global_brightness = 0.75; 
+      default_ambient_scale = 0.0;
+   } else if(global_brightness > 1.25) {
+      global_brightness = 1.25; 
+      default_ambient_scale = 1.0;
    } 
 }
 
@@ -382,7 +406,7 @@ static void render()
       for(auto &net : networks) {
          net->set_input(test_case);
          net->set_render_settings(net_render_settings);
-         net->render(pos, default_ambient_scale, global_brightness, P,V,M);
+         net->render(pos, default_ambient_scale, global_brightness, P,V,M, global_light);
          global_lighting->add_lights(net->get_lighting());
          pos += net_spacing;
       } 

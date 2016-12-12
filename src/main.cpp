@@ -57,8 +57,8 @@ const float net_ani_step = 0.05;
 shared_ptr<Program> phong;
 
 // Global Lighting Information ------------------------------------------------
-const float global_brightness = 1.5;
-const float default_ambient_scale = 0.2;
+const float global_brightness = 1.0;
+const float default_ambient_scale = 0.25;
 
 // Define our objects ---------------------------------------------------------
 shared_ptr<Shape> bunny;
@@ -285,8 +285,9 @@ static void init()
       return make_shared<NetworkRenderer>(default_network(type), sphere, connection, phong);
    };
    
-   //networks.push_back(make_net(XOR));
-   networks.push_back(make_net(FULL_4X4));
+   networks.push_back(make_net(XOR));
+   //networks.push_back(make_net(RAND_4X4));
+   //networks.push_back(make_net(FULL_4X4));
 
 }
 

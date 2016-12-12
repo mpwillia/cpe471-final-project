@@ -31,6 +31,8 @@ public:
    
    std::shared_ptr<Matrix> compute(const std::shared_ptr<Matrix> input);
    std::shared_ptr<Matrix> output() const;
+   std::shared_ptr<Matrix> pre_bias_output() const;
+   std::shared_ptr<Matrix> pre_act_output() const;
 
    std::shared_ptr<Matrix> get_weights() const;
    std::shared_ptr<Matrix> get_biases() const;
@@ -46,6 +48,8 @@ private:
    std::shared_ptr<Matrix> biases;
    
    std::shared_ptr<Matrix> output_mat;
+   std::shared_ptr<Matrix> pre_bias_output_mat;
+   std::shared_ptr<Matrix> pre_act_output_mat;
 };
 
 
@@ -74,6 +78,8 @@ public:
    
    // Getting Layer Info
    std::shared_ptr<std::vector<std::shared_ptr<Matrix>>> layer_outputs(bool include_input = false) const;
+   std::shared_ptr<std::vector<std::shared_ptr<Matrix>>> layer_pre_bias_outputs(bool include_input = false) const;
+   std::shared_ptr<std::vector<std::shared_ptr<Matrix>>> layer_pre_act_outputs(bool include_input = false) const;
    std::shared_ptr<std::vector<unsigned int>> layer_sizes(bool include_input = false) const;
 
    std::shared_ptr<Matrix> get_layer_output(unsigned int layer_num) const;

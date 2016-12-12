@@ -45,17 +45,30 @@ Layer::Layer(unsigned int layer_size, unsigned int input_size,
    this->biases = make_shared<Matrix>(1, layer_size, biases);
    
    this->output_mat = nullptr;
+   this->pre_bias_output_mat = nullptr;
+   this->pre_act_output_mat = nullptr;
 } 
 
 Layer::~Layer() {} 
 
 shared_ptr<Matrix> Layer::compute(const std::shared_ptr<Matrix> input) {
-   this->output_mat = input->dot(this->weights)->add(this->biases)->apply(this->act_func);
+   this->pre_bias_output_mat = input->dot(this->weights);
+   this->pre_act_output_mat = pre_bias_output_mat->add(this->biases);
+   this->output_mat = pre_act_output_mat->apply(this->act_func);
+   //this->output_mat = pre_bias_output_mat->add(this->biases)->apply(this->act_func);
    return this->output_mat;
 } 
 
 shared_ptr<Matrix> Layer::output() const {
    return this->output_mat;
+} 
+
+shared_ptr<Matrix> Layer::pre_bias_output() const {
+   return this->pre_bias_output_mat;
+} 
+
+shared_ptr<Matrix> Layer::pre_act_output() const {
+   return this->pre_act_output_mat; 
 } 
 
 shared_ptr<Matrix> Layer::get_weights() const {
@@ -174,12 +187,43 @@ shared_ptr<vector<shared_ptr<Matrix>>> Network::layer_outputs(bool include_input
    } 
 
    for(int i = 0; i < this->num_layers; i++) {
-      //outputs->push_back(this->layers->at(i)->output());
       outputs->push_back(this->layers[i].output());
    } 
    
    return outputs;
 }   
+
+shared_ptr<vector<shared_ptr<Matrix>>> Network::layer_pre_bias_outputs(bool include_input) const {
+   
+   auto outputs = make_shared<vector<shared_ptr<Matrix>>>();
+   
+   if(include_input) {
+      outputs->push_back(this->net_input_mat);
+   } 
+
+   for(int i = 0; i < this->num_layers; i++) {
+      outputs->push_back(this->layers[i].pre_bias_output());
+   } 
+   
+   return outputs;
+}   
+
+shared_ptr<vector<shared_ptr<Matrix>>> Network::layer_pre_act_outputs(bool include_input) const {
+   
+   auto outputs = make_shared<vector<shared_ptr<Matrix>>>();
+   
+   if(include_input) {
+      outputs->push_back(this->net_input_mat);
+   } 
+
+   for(int i = 0; i < this->num_layers; i++) {
+      outputs->push_back(this->layers[i].pre_act_output());
+   } 
+   
+   return outputs;
+}   
+
+
 
 shared_ptr<vector<unsigned int>> Network::layer_sizes(bool include_input) const {
     
@@ -190,7 +234,6 @@ shared_ptr<vector<unsigned int>> Network::layer_sizes(bool include_input) const 
    } 
 
    for(int i = 0; i < this->num_layers; i++) {
-      //outputs->push_back(this->layers->at(i)->output());
       outputs->push_back(this->layers[i].get_layer_size());
    } 
    
@@ -272,7 +315,7 @@ shared_ptr<Network> make_full_network(unsigned int input_size, unsigned int num_
                layer_weights.push_back(1);
             } 
          }
-         layer_biases.push_back(1);
+         layer_biases.push_back(0);
       }
 
       weights.push_back(layer_weights);

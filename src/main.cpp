@@ -41,6 +41,9 @@ int g_width = 1280;
 int g_height = 960;
 
 vector<shared_ptr<NetworkRenderer>> networks;
+enum NetSetup {
+   BINOPS, RAND
+};
 
 vector<float> case1 = {0,0};
 vector<float> case2 = {0,1};
@@ -58,7 +61,7 @@ shared_ptr<Program> phong;
 
 // Global Lighting Information ------------------------------------------------
 const float global_brightness = 1.0;
-const float default_ambient_scale = 0.25;
+const float default_ambient_scale = 0.5;
 
 // Define our objects ---------------------------------------------------------
 shared_ptr<Shape> bunny;
@@ -99,6 +102,27 @@ double cursor_x = g_width / 2.0;
 double cursor_y = g_height / 2.0;
 
 
+
+static shared_ptr<NetworkRenderer> make_net(NetworkType type) {
+   return make_shared<NetworkRenderer>(default_network(type), sphere, connection, phong);
+} 
+
+static void load_net_setup(NetSetup setup) {
+   networks.clear();
+   switch(setup) {
+      case BINOPS:
+         networks.push_back(make_net(AND));
+         networks.push_back(make_net(OR));
+         networks.push_back(make_net(XOR));
+         break;
+
+      case RAND:
+         networks.push_back(make_net(RAND_4X4));
+   } 
+} 
+
+
+
 static void error_callback(int error, const char *description)
 {
 	cerr << description << endl;
@@ -122,24 +146,30 @@ static void key_callback(GLFWwindow *window, int key, int scancode, int action, 
          case CAM_FASTER: cam_speed *= speed_mult; break;
          case CAM_FAST: cam_speed *= speed_mult * speed_mult; break;
 
+         // Network Structures
+         case NET_BINOPS: load_net_setup(BINOPS); break;
+         case NET_RAND: load_net_setup(RAND); break;
+
          // Network Inputs
          case NET_CASE_1: case_idx = 0; break;
          case NET_CASE_2: case_idx = 1; break;
          case NET_CASE_3: case_idx = 2; break;
          case NET_CASE_4: case_idx = 3; break;
-      
+         case NET_CASE_5: case_idx = 4; break;
+         case NET_CASE_6: case_idx = 5; break;
+         case NET_CASE_7: case_idx = 6; break;
+         case NET_CASE_8: case_idx = 7; break;
+
          // Pulse Movement Settings
          case MOVE_TYPE_LINEAR: net_render_settings.move_type = LINEAR; break;
          case MOVE_TYPE_COS: net_render_settings.move_type = COS; break;
          case MOVE_TYPE_SIN: net_render_settings.move_type = SIN; break;
          
-         case MOVE_EXP_STEP_UP       : net_render_settings.move_exp += 1.0; break;
          case MOVE_EXP_CUBE          : net_render_settings.move_exp = 3.0; break;
          case MOVE_EXP_SQR           : net_render_settings.move_exp = 2.0; break; 
          case MOVE_EXP_NONE          : net_render_settings.move_exp = 1.0; break; 
          case MOVE_EXP_THREE_QUARTER : net_render_settings.move_exp = 0.75; break;
          case MOVE_EXP_HALF          : net_render_settings.move_exp = 0.50; break; 
-         case MOVE_EXP_STEP_DOWN     : net_render_settings.move_exp -= 0.25; break; 
 
          // Animation Speed
          case ANI_FASTER: net_render_settings.animation_speed += net_ani_step; break;
@@ -226,7 +256,7 @@ static void init()
    // Define OpenGL Parameters ------------------------------------------------
    //vec3 clear_color = vec3(0.12f, 0.34f, 0.56f);
    vec3 clear_color = vec3(0.13f, 0.13f, 0.14f);
-   float bg_brightness = 0.2 * global_brightness;
+   float bg_brightness = 0.3 * global_brightness;
 
 	// Set background color.
    clear_color *= bg_brightness;
@@ -281,11 +311,10 @@ static void init()
 
    
    // Create Network
-   auto make_net = [](NetworkType type) {
-      return make_shared<NetworkRenderer>(default_network(type), sphere, connection, phong);
-   };
    
-   networks.push_back(make_net(XOR));
+   load_net_setup(BINOPS);
+
+   //networks.push_back(make_net(XOR));
    //networks.push_back(make_net(RAND_4X4));
    //networks.push_back(make_net(FULL_4X4));
 

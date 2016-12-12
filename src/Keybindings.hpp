@@ -22,11 +22,19 @@ enum Keybinds {
    CAM_FASTER   = GLFW_KEY_F,
    CAM_FAST     = GLFW_KEY_C,
 
+   // Network Structures
+   NET_BINOPS = GLFW_KEY_B,
+   NET_RAND   = GLFW_KEY_N,
+
    // Network Input
    NET_CASE_1 = GLFW_KEY_1,
    NET_CASE_2 = GLFW_KEY_2,
    NET_CASE_3 = GLFW_KEY_3,
    NET_CASE_4 = GLFW_KEY_4,
+   NET_CASE_5 = GLFW_KEY_5,
+   NET_CASE_6 = GLFW_KEY_6,
+   NET_CASE_7 = GLFW_KEY_7,
+   NET_CASE_8 = GLFW_KEY_8,
 
    // Animation Speed
    ANI_FASTER = GLFW_KEY_EQUAL,
@@ -39,13 +47,11 @@ enum Keybinds {
    MOVE_TYPE_COS = GLFW_KEY_K,
    MOVE_TYPE_SIN = GLFW_KEY_J,
   
-   MOVE_EXP_STEP_UP       = GLFW_KEY_Y,
    MOVE_EXP_CUBE          = GLFW_KEY_U,
    MOVE_EXP_SQR           = GLFW_KEY_I,
    MOVE_EXP_NONE          = GLFW_KEY_O,
    MOVE_EXP_THREE_QUARTER = GLFW_KEY_P,
    MOVE_EXP_HALF          = GLFW_KEY_LEFT_BRACKET,
-   MOVE_EXP_STEP_DOWN     = GLFW_KEY_RIGHT_BRACKET,
 };
 
 static string describe(Keybinds bind) {
@@ -60,10 +66,18 @@ static string describe(Keybinds bind) {
       case CAM_FASTER : return "Super Speed (x3)";
       case CAM_FAST   : return "Warp Speed  (x9)";
       
+      case NET_BINOPS : return "Binary Operations ";
+      case NET_RAND   : return "Random 4x4 Network";
+
       case NET_CASE_1 : return "Netowrk Input 1";
       case NET_CASE_2 : return "Netowrk Input 2";
       case NET_CASE_3 : return "Netowrk Input 3";
       case NET_CASE_4 : return "Netowrk Input 4";
+      case NET_CASE_5 : return "Netowrk Input 5";
+      case NET_CASE_6 : return "Netowrk Input 6";
+      case NET_CASE_7 : return "Netowrk Input 7";
+      case NET_CASE_8 : return "Netowrk Input 8";
+
 
       case ANI_FASTER : return "Speed Up   ";
       case ANI_SLOWER : return "Slow Down  ";
@@ -74,13 +88,11 @@ static string describe(Keybinds bind) {
       case MOVE_TYPE_COS    : return "Cosine";
       case MOVE_TYPE_SIN    : return "Sin   ";
       
-      case MOVE_EXP_STEP_UP       : return "Increase";
       case MOVE_EXP_CUBE          : return "Cubic   ";
       case MOVE_EXP_SQR           : return "Squared ";
       case MOVE_EXP_NONE          : return "None    ";
       case MOVE_EXP_THREE_QUARTER : return "3/4     ";
       case MOVE_EXP_HALF          : return "1/2     ";
-      case MOVE_EXP_STEP_DOWN     : return "Decrease";
       default:
          return "TODO";
    } 
@@ -118,9 +130,16 @@ static void print_camera_keybindings() {
    printf("\n");
 } 
 
+static void print_net_structure_keybindings() {
+   printf("Network Structure\n");
+   print_keybind(NET_BINOPS);
+   print_keybind(NET_RAND);
+   printf("\n");
+} 
+
 static void print_net_input_keybindings() {
    printf("Network Input\n");
-   printf(one_tab_fmt, "Change Input : [1-4]");
+   printf(one_tab_fmt, "Change Input : [1-8]");
    printf("\n");
 } 
 
@@ -136,19 +155,18 @@ static void print_animation_keybindings() {
    print_keybind(MOVE_TYPE_COS, two_tab_fmt);
    print_keybind(MOVE_TYPE_SIN, two_tab_fmt);
    printf("   Movement Exponent\n");
-   print_keybind(MOVE_EXP_STEP_UP, two_tab_fmt);
    print_keybind(MOVE_EXP_CUBE, two_tab_fmt);
    print_keybind(MOVE_EXP_SQR, two_tab_fmt);
    print_keybind(MOVE_EXP_NONE, two_tab_fmt);
    print_keybind(MOVE_EXP_THREE_QUARTER, two_tab_fmt);
    print_keybind(MOVE_EXP_HALF, two_tab_fmt);
-   print_keybind(MOVE_EXP_STEP_DOWN, two_tab_fmt);
    printf("\n");
 } 
 
 static void print_keybindings() {
    printf("--- Controls ---\n");
    print_camera_keybindings();
+   print_net_structure_keybindings();
    print_net_input_keybindings();
    print_animation_keybindings();
    printf("\n");

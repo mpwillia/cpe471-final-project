@@ -98,7 +98,7 @@ const Material snake_yellow = {glm::vec3(0.15, 0.15, 0.1),
 
 //rgb(86, 103, 255)
 //rgb(0.34, 0.40, 1.0);
-const Material neuron_base = {glm::vec3(0.08, 0.10, 0.25),
+const Material neuron_base = {glm::vec3(0.10, 0.13, 0.19),
                               glm::vec3(0.34, 0.40, 1.0),
                               glm::vec3(0.5, 0.6, 1.0),
                               glm::vec3(0.88,0.61,-0.21),
@@ -114,7 +114,7 @@ const Material neuron_act = {glm::vec3(0.22, 0.15, 0.05),
 
 //rgb(137, 54, 226)
 //rgb(0.54, 0.21, 0.88)
-const Material neuron_input_base = {glm::vec3(0.13, 0.05, 0.22),
+const Material neuron_input_base = {glm::vec3(0.15, 0.11, 0.22),
                                     glm::vec3(0.54, 0.21, 0.88),
                                     glm::vec3(0.7, 0.4, 1.0),
                                     glm::vec3(0.95, 0.88, -0.31),

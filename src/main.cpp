@@ -31,6 +31,7 @@ using namespace glm;
 #include "Keybindings.hpp"
 
 #include <array>
+#include <limits>
 
 GLFWwindow *window; // Main application window
 string RESOURCE_DIR = ""; // Where the resources are loaded from
@@ -541,8 +542,13 @@ int main(int argc, char **argv)
 
    print_keybindings();
 
-   double lastTime = glfwGetTime();
-   int nbFrames = 0;
+   double prev_time = glfwGetTime();
+   const double poll_rate_s = 1.0;
+   int num_frames = 0;
+
+   // fps stat tracking
+   double min_fps = numeric_limits<double>::infinity();
+   double max_fps = -min_fps;
 
 	// Loop until the user closes the window.
 	while(!glfwWindowShouldClose(window)) {
@@ -553,25 +559,38 @@ int main(int argc, char **argv)
 		// Poll for and process events.
 		glfwPollEvents();
 
-      double currentTime = glfwGetTime();
-      nbFrames++;
-      if ( currentTime - lastTime >= 1.0 ) { // If last printf() was more than 1 sec ago
-         // printf and reset timer
-         /*
-         printf("%7.3f ms/frame [%3d fps]\r", 1000.0/double(nbFrames), nbFrames);
-         cout << flush;
-         */
+      double cur_time = glfwGetTime();
+      num_frames++; // count frames rendered
+
+      if ( cur_time - prev_time >= poll_rate_s) { 
+         // Print Info Every Second
+         // Report FPS and other info every second
          
          printf("\n\n");
          print_keybindings();
          print_render_settings(net_render_settings);
          printf("\n");
-         printf("Framerate %7.3f ms/frame [%3d fps]\n", 1000.0/double(nbFrames), nbFrames);
+         
+         double mspf = 1000.0 / double(num_frames);
+         double fps = double(num_frames) / poll_rate_s;
+         
+         if(fps < min_fps) min_fps = fps;
+         if(fps > max_fps) max_fps = fps;
+         
+         // frames / second  ==> second / frames ==> milliseconds / frame
 
-         nbFrames = 0;
-         lastTime += 1.0;
+         double min_mspf = 1000.0 / min_fps;
+         double max_mspf = 1000.0 / max_fps;
+         printf("Min %7.3f ms/frame [%3d fps]\n", min_mspf, (int)min_fps);
+         printf("Max %7.3f ms/frame [%3d fps]\n", max_mspf, (int)max_fps);
+
+         printf("Framerate %7.3f ms/frame [%3d fps]\n", mspf, (int)fps);
+
+         num_frames = 0;
+         prev_time += 1.0;
       }
 	}
+
 	// Quit program.
 	glfwDestroyWindow(window);
 	glfwTerminate();

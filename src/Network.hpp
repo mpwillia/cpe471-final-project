@@ -14,7 +14,8 @@ float sigmoid(float x);
 
 typedef enum NetworkType {
    XOR, OR, AND, NOT,
-   RAND_4X4, RAND_8X8, RAND_LARGE, RAND_HUGE,
+   RAND_4X4,
+   SEEDED_4X4, SEEDED_8X8, SEEDED_LARGE, SEEDED_HUGE,
    FULL_4X4
 } NetworkType;
 

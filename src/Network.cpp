@@ -419,10 +419,12 @@ shared_ptr<Network> default_network(NetworkType type) {
          return make_shared<Network>(1, relu, layer_sizes, weights, biases);
       break;}  
 
-      case RAND_4X4: return  make_random_network(2, 4, 4, 5);
-      case RAND_8X8: return  make_random_network(2, 8, 8, 5);
-      case RAND_LARGE: return  make_random_network(2, 6, 50, 5);
-      case RAND_HUGE: return  make_random_network(2, 8, 500, 5);
+      case RAND_4X4: return  make_random_network(2, 4, 4, time(NULL));
+
+      case SEEDED_4X4: return  make_random_network(2, 4, 4, 5);
+      case SEEDED_8X8: return  make_random_network(2, 8, 8, 5);
+      case SEEDED_LARGE: return  make_random_network(2, 6, 50, 5);
+      case SEEDED_HUGE: return  make_random_network(2, 8, 500, 5);
       
       case FULL_4X4: return make_full_network(2, 4, 4);
    } 

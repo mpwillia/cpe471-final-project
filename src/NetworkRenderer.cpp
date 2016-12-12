@@ -26,6 +26,8 @@ float SPACING_SCALE = 4.0;
 const int lights_per_conn = 16;
 const int lights_per_neuron = 16;
 
+// General Utilities ----------------------------------------------------------
+
 const char* movement_type_str(int enumVal) {
    return MovementTypeStrings[enumVal];
 }
@@ -50,6 +52,13 @@ void print_render_settings(const RenderSettings render_settings) {
    } 
    printf("\n");
 } 
+
+template<typename T>
+T lerp(T start, T end, float p) {
+   return (1-p)*start + p*end;
+} 
+
+// Network Renderer Definition ------------------------------------------------
 
 NetworkRenderer::NetworkRenderer(shared_ptr<Network> network, 
                                  shared_ptr<Shape> neuron_shape, 
@@ -337,7 +346,6 @@ void NetworkRenderer::compute_propagation_lighting(shared_ptr<MatrixStack> M) {
    
    unsigned int layer_num = this->get_current_layer();
    float prop_amt = this->get_current_layer_progress();
-   
 
    switch(this->render_settings.move_type) {
       case COS:
@@ -372,33 +380,37 @@ void NetworkRenderer::compute_propagation_lighting(shared_ptr<MatrixStack> M) {
    LayerRenderInfo start_layer_info = this->get_layer_render_info(layer_num);
    LayerRenderInfo end_layer_info = this->get_layer_render_info(layer_num+1);
 
+   float bias_bound = 0.925;
+
    for (auto &conn_info : this->connections[layer_num]) {
       unsigned int start_idx = conn_info.start_neuron_idx;  
       unsigned int end_idx = conn_info.end_neuron_idx;  
 
+      if(abs(start_layer_info.output->at(start_idx)) < 0.05) {
+         continue;
+      }
+
+      // Compute Position
       vec3 start_pos = this->positions[layer_num][start_idx];
       vec3 end_pos = this->positions[layer_num+1][end_idx];
-      vec3 prop_pos = ((1 - prop_amt) * start_pos) + (prop_amt * end_pos);
+      vec3 prop_pos = lerp(start_pos, end_pos, prop_amt);
       
+      // Compute Brightness
       float start_val = start_layer_info.output->at(start_idx);
-      
-      float end_weight = end_layer_info.weights->at(end_idx);
-      float end_val = start_val * end_weight;
+      float end_val = abs(start_val * end_layer_info.weights->at(end_idx));
 
-      end_val = abs(end_val);
-
-      float brightness = ((1-prop_amt) * start_val) + (prop_amt * end_val);
-
-      M->pushMatrix();
-      if(start_layer_info.output->at(start_idx) > 0.5) {
-
-         vec3 light_pos = vec3(M->topMatrix() * vec4(prop_pos, 1));
-         this->lighting->add_light(light_pos, 
-                                   start_layer_info.neuron_props.act_mat.diffuse, 
-                                   vec3(1,0.1,0.025), 
-                                   brightness * 0.8);
+      if(prop_amt >= bias_bound) {
+         float bias_p = (prop_amt - bias_bound) / (1.0 - bias_bound);
+         end_val = lerp(end_val, end_layer_info.output->at(end_idx), bias_p);
       } 
-      M->popMatrix();
+
+      float brightness = lerp(start_val, end_val, prop_amt);
+
+      vec3 light_pos = vec3(M->topMatrix() * vec4(prop_pos, 1));
+      this->lighting->add_light(light_pos, 
+                                start_layer_info.neuron_props.act_mat.diffuse, 
+                                vec3(1,0.1,0.025), 
+                                brightness * 1.0);
    } 
    
 } 
@@ -552,6 +564,8 @@ void NetworkRenderer::render_layer_connections(unsigned int layer_num,
       M->popMatrix();
    } 
 }
+
+
 
 
 

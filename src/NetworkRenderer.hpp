@@ -22,7 +22,7 @@ struct NeuronProps {
    float base_size;
 };
 
-const NeuronProps std_neuron_props = {neuron_base, neuron_act, 5.0f};
+const NeuronProps std_neuron_props = {neuron_base, neuron_act, 6.0f};
 const NeuronProps input_neuron_props = {neuron_input_base, neuron_input_act, 8.0f};
 
 
@@ -164,14 +164,7 @@ private:
    float get_current_layer_progress() const;
    bool should_light_layer(unsigned int layer_num) const;
 
-
    RenderSettings render_settings;
-   
-   /*
-   float ani_speed;
-   float start_delay;
-   MovementType move_type;
-   */
 };
 
 #endif

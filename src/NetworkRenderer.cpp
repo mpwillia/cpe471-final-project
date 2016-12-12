@@ -166,8 +166,12 @@ void NetworkRenderer::render(vec3 position,
    //float time = glfwGetTime() * this->ani_speed;
    float time = glfwGetTime();
    float delta = time - this->prev_timestamp;
+   if(this->prev_timestamp == 0) {
+      this->internal_time = 0; 
+   } else {
+      this->internal_time += delta * this->render_settings.animation_speed;
+   } 
    this->prev_timestamp = time;
-   this->internal_time += delta * this->render_settings.animation_speed;
 
    this->lighting->clear_lights();
    this->lighting->set_global_brightness(global_brightness);
@@ -307,7 +311,7 @@ void NetworkRenderer::compute_neuron_connection(unsigned int layer_num) {
          float weight_mag = abs(weight);
          if(weight_mag < min_render_val) continue;
 
-         float conn_size = (neuron_size + abs(weight*neuron_size)) * 1.25;
+         float conn_size = (neuron_size + abs(weight*neuron_size*0.5)) * 1.0;
 
          //printf("prev_i : %d , cur_i : %d | conn_size : %.3f  |  weight : %.3f\n", prev_i, cur_i, conn_size, weight);
 

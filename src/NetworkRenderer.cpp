@@ -161,7 +161,8 @@ void NetworkRenderer::render(vec3 position,
                              float global_brightness,
                              shared_ptr<MatrixStack> P, 
                              shared_ptr<MatrixStack> V, 
-                             shared_ptr<MatrixStack> M) {
+                             shared_ptr<MatrixStack> M,
+                             bool global_light) {
 
    //float time = glfwGetTime() * this->ani_speed;
    float time = glfwGetTime();
@@ -171,11 +172,17 @@ void NetworkRenderer::render(vec3 position,
    } else {
       this->internal_time += delta * this->render_settings.animation_speed;
    } 
+   
+   if(this->internal_time < -this->render_settings.start_delay) {
+      this->internal_time = -this->render_settings.start_delay; 
+   } 
+
    this->prev_timestamp = time;
 
    this->lighting->clear_lights();
    this->lighting->set_global_brightness(global_brightness);
-   //this->lighting->add_light(vec3(0,10,0), vec3(1), vec3(1,0,0), 1.0);
+   if(global_light)
+      this->lighting->add_light(vec3(-150,100,-5), vec3(1), vec3(1,0.05,0));
 
    this->ambient_scale = ambient_scale;
 
@@ -484,7 +491,7 @@ void NetworkRenderer::render_layer_neurons(unsigned int layer_num,
    glUniform1f(prog->getUniform("size"), neuron_size*1.0);
    load_material(this->prog, layer_info.neuron_props.base_mat);
 
-   if(this->should_light_layer(layer_num)) {
+   if(this->should_light_layer(layer_num-1)) {
       //lighting->load_lights_near(this->prog, layer_info.positions[i], lights_per_neuron, -1);
       lighting->load_lights(this->prog);
    } else {
@@ -536,7 +543,7 @@ void NetworkRenderer::render_layer_connections(unsigned int layer_num,
    
    load_material(this->prog, layer_info.neuron_props.base_mat);
 
-   if(this->should_light_layer(layer_num)) {
+   if(this->should_light_layer(layer_num-1)) {
       lighting->load_lights(this->prog);
    } else {
       lighting->load_zero_lights(this->prog);

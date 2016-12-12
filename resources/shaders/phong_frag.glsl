@@ -40,7 +40,8 @@ void main()
 
    // Begin computing our reflected color
    vec3 refl_color = MatAmb * ambient_scale;
-
+   
+   vec3 max_emissive = vec3(0);
    for(int i = 0; i < num_lights && i < 20; i++) {
 
       if(num_lights_debug)
@@ -80,31 +81,22 @@ void main()
       vec3 refl_vec = reflect(light_vec, frag_nor);
       vec3 specular = MatSpec * pow(max(dot(refl_vec, view_vec), 0), shine) * light_color;
       
-      //float emis_atten = 1.0 / max(pow(d-light_inside_dist, 2),1.0);
+      refl_color += dist_atten * brightness * (diffuse + specular);
 
-      //vec3 emissive = MatEmis * max(-l_dot,0.5) * emis_atten;
-      
-      vec3 emissive = vec3(0);
+      // Handle Emissive
       if(d < size * 2.0) {
-         
          float ed = max(d-(size+0.5),0.0);
          float emis_atten = 1.0 / (1.0 + 0.5 *ed + 0.5 *ed*ed + 1.0 *ed*ed*ed);
          
-         /*
-         if(emis_atten < 0.001) {
-            emis_atten = 0; 
-         }*/ 
-         emissive = MatEmis * emis_atten;
+         vec3 emissive_check = 1.25 * dist_atten * brightness * MatEmis * emis_atten;
+         if(length(emissive_check) > length(max_emissive)) {
+            max_emissive = emissive_check;
+         }
       } 
-
-      /*
-      if(d >= light_inside_dist) {
-         emissive *= 0.0;
-      }
-      */
-      refl_color += dist_atten * brightness * (diffuse + specular + emissive);
    } 
-   
+  
+   //refl_color += clamp(max_emissive, vec3(0), vec3(MatEmis));
+   refl_color += max_emissive;
    refl_color *= global_brightness;
    color = vec4(refl_color, 1.0);
 }

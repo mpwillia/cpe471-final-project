@@ -65,7 +65,7 @@ struct RenderSettings {
    float move_exp;
 };
 
-const RenderSettings default_render_settings = {0.5, 0.1, true, COS, 1.0};
+const RenderSettings default_render_settings = {0.5, 0.2, true, COS, 1.0};
 
 void print_render_settings(const RenderSettings render_settings);
 

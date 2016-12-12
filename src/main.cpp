@@ -96,7 +96,7 @@ const float mouse_offset_div = 10000.0;
 const double clamp_val = 175.0;
 
 
-const float far_plane = 300.0;
+const float far_plane = 400.0;
 
 // Stores the cursor position
 double cursor_x = g_width / 2.0;

@@ -42,7 +42,7 @@ int g_height = 960;
 
 vector<shared_ptr<NetworkRenderer>> networks;
 enum NetSetup {
-   BINOPS, RAND
+   BINOPS, RAND, SPARSE
 };
 bool global_light = false;
 
@@ -119,6 +119,11 @@ static void load_net_setup(NetSetup setup) {
 
       case RAND:
          networks.push_back(make_net(RAND_4X4));
+         break;
+
+      case SPARSE:
+         networks.push_back(make_net(SPARSE_RAND_4X4));
+         break;
    } 
 } 
 
@@ -163,8 +168,9 @@ static void key_callback(GLFWwindow *window, int key, int scancode, int action, 
          case GLOBAL_LIGHT: global_light = !global_light; break;
 
          // Network Structures
-         case NET_BINOPS: load_net_setup(BINOPS); break;
-         case NET_RAND: load_net_setup(RAND); break;
+         case NET_BINOPS : load_net_setup(BINOPS); break;
+         case NET_RAND   : load_net_setup(RAND); break;
+         case NET_SPARSE : load_net_setup(SPARSE); break;
 
          // Network Inputs
          case NET_CASE_1: case_idx = 0; break;
@@ -401,7 +407,11 @@ static void render()
 
       // Draw Sample Networks
       auto test_case = test_cases[case_idx % test_cases.size()];
-      
+     
+      if(global_light) {
+         global_lighting->add_lights(networks[0]->get_global_lighting());
+      } 
+
       vec3 pos = net_base_pos - (net_spacing * (float)(networks.size() / 2.0));
       for(auto &net : networks) {
          net->set_input(test_case);

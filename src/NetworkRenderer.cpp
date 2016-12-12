@@ -79,6 +79,10 @@ NetworkRenderer::NetworkRenderer(shared_ptr<Network> network,
 
    this->std_props = std_props;
    this->input_props = input_props;
+   
+   this->global_lighting = make_shared<Lighting>();
+   this->global_lighting->add_light(vec3(-150,100,0), vec3(1), vec3(1,0.075,0));
+   this->global_light = false;
 
    this->lighting = make_shared<Lighting>();
    this->layer_spacing = std_props.base_size * (this->spacing_scale * 1.5);
@@ -155,6 +159,10 @@ const shared_ptr<Lighting> NetworkRenderer::get_lighting() const {
    return this->lighting;
 } 
 
+const shared_ptr<Lighting> NetworkRenderer::get_global_lighting() const {
+   return this->global_lighting;
+} 
+
 // Main Draw Function
 void NetworkRenderer::render(vec3 position, 
                              float ambient_scale, 
@@ -179,10 +187,14 @@ void NetworkRenderer::render(vec3 position,
 
    this->prev_timestamp = time;
 
+   this->global_light = global_light;
+
    this->lighting->clear_lights();
    this->lighting->set_global_brightness(global_brightness);
-   if(global_light)
-      this->lighting->add_light(vec3(-150,100,-5), vec3(1), vec3(1,0.05,0));
+
+   if(this->global_light) {
+      this->lighting->add_lights(this->global_lighting);
+   } 
 
    this->ambient_scale = ambient_scale;
 
@@ -318,7 +330,7 @@ void NetworkRenderer::compute_neuron_connection(unsigned int layer_num) {
          float weight_mag = abs(weight);
          if(weight_mag < min_render_val) continue;
 
-         float conn_size = (neuron_size + abs(weight*neuron_size*0.5)) * 1.0;
+         float conn_size = (neuron_size + abs(weight*weight*neuron_size*0.5)) * 1.0;
 
          //printf("prev_i : %d , cur_i : %d | conn_size : %.3f  |  weight : %.3f\n", prev_i, cur_i, conn_size, weight);
 
@@ -492,11 +504,12 @@ void NetworkRenderer::render_layer_neurons(unsigned int layer_num,
    load_material(this->prog, layer_info.neuron_props.base_mat);
 
    if(this->should_light_layer(layer_num-1)) {
-      //lighting->load_lights_near(this->prog, layer_info.positions[i], lights_per_neuron, -1);
       lighting->load_lights(this->prog);
+   } else if(this->global_light) {
+      global_lighting->load_lights(this->prog);
    } else {
       lighting->load_zero_lights(this->prog);
-   } 
+   }
 
    // Draw the Layer
    M->pushMatrix();
@@ -545,6 +558,8 @@ void NetworkRenderer::render_layer_connections(unsigned int layer_num,
 
    if(this->should_light_layer(layer_num-1)) {
       lighting->load_lights(this->prog);
+   } else if(this->global_light) {
+      global_lighting->load_lights(this->prog);
    } else {
       lighting->load_zero_lights(this->prog);
    }

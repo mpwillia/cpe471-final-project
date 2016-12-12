@@ -31,6 +31,7 @@ enum Keybinds {
    // Network Structures
    NET_BINOPS = GLFW_KEY_B,
    NET_RAND   = GLFW_KEY_N,
+   NET_SPARSE = GLFW_KEY_M,
 
    // Network Input
    NET_CASE_1 = GLFW_KEY_1,
@@ -77,8 +78,9 @@ static string describe(Keybinds bind) {
       case BRIGHT_RESET : return "Reset Brightness   ";
       case GLOBAL_LIGHT : return "Toggle Global Light";
 
-      case NET_BINOPS : return "Binary Operations ";
-      case NET_RAND   : return "Random 4x4 Network";
+      case NET_BINOPS : return "Binary Operations       ";
+      case NET_RAND   : return "Full Random 4x4 Network ";
+      case NET_SPARSE : return "Sparse Random 4x4 Network";
 
       case NET_CASE_1 : return "Netowrk Input 1";
       case NET_CASE_2 : return "Netowrk Input 2";
@@ -151,6 +153,7 @@ static void print_net_structure_keybindings() {
    printf("Network Structure\n");
    print_keybind(NET_BINOPS);
    print_keybind(NET_RAND);
+   print_keybind(NET_SPARSE);
    printf("\n");
 } 
 

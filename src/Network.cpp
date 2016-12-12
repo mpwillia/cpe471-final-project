@@ -332,7 +332,7 @@ float rand_between(float min, float max) {
 } 
 
 shared_ptr<Network> make_random_network(unsigned int input_size, unsigned int num_layers,
-                                        unsigned int layer_size, unsigned int seed) {
+                                        unsigned int layer_size, unsigned int seed, bool sparse = false) {
 
    srand(seed);
 
@@ -348,14 +348,20 @@ shared_ptr<Network> make_random_network(unsigned int input_size, unsigned int nu
          
          if(i == 0) {
             for(int k = 0; k < input_size; k++) {
-               layer_weights.push_back(rand_between(-1,1));
+               float w = rand_between(-1,1);
+               if(sparse) w = round(w);
+               layer_weights.push_back(w);
             } 
          } else {
             for(int k = 0; k < layer_size; k++) {
-               layer_weights.push_back(rand_between(-1,1));
+               float w = rand_between(-1,1);
+               if(sparse) w = round(w);
+               layer_weights.push_back(w);
             } 
          }
-         layer_biases.push_back(rand_between(-1,1));
+         float b = rand_between(-1,1);
+         if(sparse) b = round(b);
+         layer_biases.push_back(b);
       }
 
       weights.push_back(layer_weights);
@@ -420,6 +426,7 @@ shared_ptr<Network> default_network(NetworkType type) {
       break;}  
 
       case RAND_4X4: return  make_random_network(2, 4, 4, time(NULL));
+      case SPARSE_RAND_4X4: return  make_random_network(2, 4, 4, time(NULL), true);
 
       case SEEDED_4X4: return  make_random_network(2, 4, 4, 5);
       case SEEDED_8X8: return  make_random_network(2, 8, 8, 5);

@@ -91,6 +91,7 @@ public:
 
    // Getting Lighting Model --------------------------------------------------
    const std::shared_ptr<Lighting> get_lighting() const;
+   const std::shared_ptr<Lighting> get_global_lighting() const;
    
    // Settings Neural Network Input -------------------------------------------
    void set_input(const std::vector<float> input);
@@ -157,6 +158,9 @@ private:
    float ambient_scale;
    float spacing_scale;
    float layer_spacing;
+
+   std::shared_ptr<Lighting> global_lighting;
+   bool global_light;
 
    float internal_time;
    float prev_timestamp; // for computing time deltas

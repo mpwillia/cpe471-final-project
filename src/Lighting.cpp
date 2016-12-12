@@ -43,20 +43,12 @@ void send_light_vector(shared_ptr<Program> prog, const vector<Light>& lights, fl
 } 
 
 bool light_cmp (const Light& lhs, const Light& rhs) {
-
    return lhs.pos.z < rhs.pos.z;
-   /*
-   if(lhs.pos.z == rhs.pos.z) {
-      return lhs.pos.x < rhs.pos.x; 
-   } else {
-      return lhs.pos.z < rhs.pos.z;
-   }
-   */
 };
 
 
 
-Lighting::Lighting(unsigned int max_lights) : max_lights(max_lights) {
+Lighting::Lighting(unsigned int max_lights) : max_lights(max_lights), global_brightness(1.0f) {
    lights = vector<Light>();
    light_set = multiset<Light,bool(*)(const Light&,const Light&)>(light_cmp);
 } 
@@ -66,6 +58,10 @@ Lighting::~Lighting() {}
 
 unsigned int Lighting::num_lights() const {
    return this->lights.size();
+} 
+
+void Lighting::set_global_brightness(float global_brightness) {
+   this->global_brightness = global_brightness;  
 } 
 
 void Lighting::add_lights(const shared_ptr<Lighting> lights) {
@@ -100,12 +96,12 @@ void Lighting::load_zero_lights(shared_ptr<Program> prog) const {
    //glUniform1f(prog->getUniform("global_brightness"), 1.0);   
 } 
 
-void Lighting::load_lights(shared_ptr<Program> prog, float global_brightness) const {
-   send_light_vector(prog, this->lights, global_brightness);
+void Lighting::load_lights(shared_ptr<Program> prog) const {
+   send_light_vector(prog, this->lights, this->global_brightness);
 } 
 
 void Lighting::load_lights_near(shared_ptr<Program> prog, vec3 obj_position, 
-                                int max_lights, float max_dist, float global_brightness) const {
+                                int max_lights, float max_dist) const {
 
    if(max_lights > this->light_set.size())
       max_lights = this->light_set.size();
@@ -122,7 +118,7 @@ void Lighting::load_lights_near(shared_ptr<Program> prog, vec3 obj_position,
    } 
 
    if(subset.size() < max_lights) {
-      send_light_vector(prog, subset, global_brightness);
+      send_light_vector(prog, subset, this->global_brightness);
    } else {
 
       auto dist_cmp = [&](const Light& lhs, const Light& rhs) {
@@ -132,7 +128,8 @@ void Lighting::load_lights_near(shared_ptr<Program> prog, vec3 obj_position,
 
       sort(subset.begin(), subset.end(), dist_cmp);
       
-      send_light_vector(prog, vector<Light>(subset.begin(), subset.begin()+max_lights), global_brightness);
+      send_light_vector(prog, vector<Light>(subset.begin(), subset.begin()+max_lights), 
+                        this->global_brightness);
    }
 
 }

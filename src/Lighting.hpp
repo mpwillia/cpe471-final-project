@@ -23,7 +23,9 @@ public:
    Lighting(unsigned int max_lights = DEFAULT_MAX_LIGHTS);
 	virtual ~Lighting();
    
+
    unsigned int num_lights() const;
+   void set_global_brightness(float global_brightness);
    
    void add_lights(const std::shared_ptr<Lighting> lights);
 
@@ -33,13 +35,14 @@ public:
 
    void load_zero_lights(std::shared_ptr<Program> prog) const;
 
-   void load_lights(std::shared_ptr<Program> prog, float global_brightness = 1.0) const;
+   void load_lights(std::shared_ptr<Program> prog) const;
 
    void load_lights_near(std::shared_ptr<Program> prog, glm::vec3 obj_position, 
-                         int num_lights, float min_dist, float global_brightness = 1.0) const;
+                         int num_lights, float min_dist) const;
    
 private:
    unsigned int max_lights;
+   float global_brightness;
    std::vector<Light> lights;
    std::multiset<Light,bool(*)(const Light&,const Light&)> light_set;
 };

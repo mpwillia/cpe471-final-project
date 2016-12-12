@@ -88,14 +88,13 @@ void main()
          float ed = max(d-(size+0.5),0.0);
          float emis_atten = 1.0 / (1.0 + 0.5 *ed + 0.5 *ed*ed + 1.0 *ed*ed*ed);
          
-         vec3 emissive_check = 1.25 * dist_atten * brightness * MatEmis * emis_atten;
+         vec3 emissive_check = dist_atten * brightness * MatEmis * emis_atten;
          if(length(emissive_check) > length(max_emissive)) {
             max_emissive = emissive_check;
          }
       } 
    } 
   
-   //refl_color += clamp(max_emissive, vec3(0), vec3(MatEmis));
    refl_color += max_emissive;
    refl_color *= global_brightness;
    color = vec4(refl_color, 1.0);

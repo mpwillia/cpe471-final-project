@@ -21,10 +21,7 @@
 
 using namespace std;
 
-float SPACING_SCALE = 4.0;
-
-const int lights_per_conn = 16;
-const int lights_per_neuron = 16;
+const float min_render_val = 0.05;
 
 // General Utilities ----------------------------------------------------------
 
@@ -74,7 +71,7 @@ NetworkRenderer::NetworkRenderer(shared_ptr<Network> network,
       if(layer_sizes->at(i) > max_layer_size) 
          max_layer_size = layer_sizes->at(i);
 
-   SPACING_SCALE = SPACING_SCALE + (int)(this->network->get_num_layers() / 2) + (int)(max_layer_size / 2);
+   this->spacing_scale = 4.0 + (int)(this->network->get_num_layers() / 2) + (int)(max_layer_size / 2);
 
    this->neuron_shape = neuron_shape;
    this->connection_shape = connection_shape;
@@ -84,7 +81,7 @@ NetworkRenderer::NetworkRenderer(shared_ptr<Network> network,
    this->input_props = input_props;
 
    this->lighting = make_shared<Lighting>();
-   this->layer_spacing = std_props.base_size * (SPACING_SCALE * 1.5);
+   this->layer_spacing = std_props.base_size * (this->spacing_scale * 1.5);
    
    this->render_settings = render_settings;
 
@@ -201,7 +198,7 @@ void NetworkRenderer::render(vec3 position,
 
 // Private - Utilities --------------------------------------------------------
 float NetworkRenderer::get_neuron_spacing(NeuronProps props) const {
-   return props.base_size * (SPACING_SCALE - 0.0);
+   return props.base_size * (this->spacing_scale - 0.0);
 } 
 
 LayerRenderInfo NetworkRenderer::get_layer_render_info(unsigned int layer_num) const {
@@ -308,9 +305,10 @@ void NetworkRenderer::compute_neuron_connection(unsigned int layer_num) {
          // figure out our size
          float weight = layer_info.weights->at(cur_i, prev_i);
          float weight_mag = abs(weight);
-         if(weight_mag < 0.1) continue;
-         float conn_size = (neuron_size + (weight*(neuron_size*0.25))) * 1.5;
-         
+         if(weight_mag < min_render_val) continue;
+
+         float conn_size = (neuron_size + abs(weight*neuron_size)) * 1.25;
+
          //printf("prev_i : %d , cur_i : %d | conn_size : %.3f  |  weight : %.3f\n", prev_i, cur_i, conn_size, weight);
 
          // find target position
@@ -386,7 +384,7 @@ void NetworkRenderer::compute_propagation_lighting(shared_ptr<MatrixStack> M) {
       unsigned int start_idx = conn_info.start_neuron_idx;  
       unsigned int end_idx = conn_info.end_neuron_idx;  
 
-      if(abs(start_layer_info.output->at(start_idx)) < 0.05) {
+      if(abs(start_layer_info.output->at(start_idx)) < min_render_val) {
          continue;
       }
 
@@ -534,11 +532,7 @@ void NetworkRenderer::render_layer_connections(unsigned int layer_num,
    
    load_material(this->prog, layer_info.neuron_props.base_mat);
 
-   float layer_width = this->get_neuron_spacing(layer_info.neuron_props) * (layer_info.size+0);
-   float light_range = (layer_width > this->layer_spacing*2) ? layer_width : this->layer_spacing*2;
-
    if(this->should_light_layer(layer_num)) {
-      //lighting->load_lights_near(this->prog, pos, lights_per_conn, -1);
       lighting->load_lights(this->prog);
    } else {
       lighting->load_zero_lights(this->prog);
@@ -554,8 +548,6 @@ void NetworkRenderer::render_layer_connections(unsigned int layer_num,
          M->rotate(M_PI/2.0, vec3(1,0,0));
          M->scale(vec3(conn_info.size, conn_info.length, conn_info.size));
          
-         vec3 pos = vec3(M->topMatrix() * vec4(vec3(0), 1));
-
          glUniform1f(prog->getUniform("size"), conn_info.size*0.5);
          glUniformMatrix4fv(this->prog->getUniform("M"), 1, GL_FALSE, value_ptr(M->topMatrix()));
 

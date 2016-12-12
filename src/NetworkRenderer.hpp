@@ -154,6 +154,7 @@ private:
 
    std::shared_ptr<Lighting> lighting;
    float ambient_scale;
+   float spacing_scale;
    float layer_spacing;
 
    float internal_time;

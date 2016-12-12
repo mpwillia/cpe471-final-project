@@ -140,7 +140,7 @@ void NetworkRenderer::set_input(const shared_ptr<Matrix> input) {
       this->network->compute(input);
       this->internal_time = -this->render_settings.start_delay;
 
-      this->network->print_network_state();
+      //this->network->print_network_state();
    } 
 } 
 
@@ -477,6 +477,13 @@ void NetworkRenderer::render_layer_neurons(unsigned int layer_num,
    glUniform1f(prog->getUniform("size"), neuron_size*0.9);
    load_material(this->prog, layer_info.neuron_props.base_mat);
 
+   if(this->should_light_layer(layer_num)) {
+      //lighting->load_lights_near(this->prog, layer_info.positions[i], lights_per_neuron, -1);
+      lighting->load_lights(this->prog);
+   } else {
+      lighting->load_zero_lights(this->prog);
+   } 
+
    // Draw the Layer
    M->pushMatrix();
    for(int i = 0; i < layer_info.output->get_size(); i++) {
@@ -484,13 +491,6 @@ void NetworkRenderer::render_layer_neurons(unsigned int layer_num,
          M->translate(layer_info.positions[i]);
          M->scale(vec3(neuron_size));
          
-         if(this->should_light_layer(layer_num)) {
-            lighting->load_lights_near(this->prog, layer_info.positions[i], lights_per_neuron, -1);
-            //lighting->load_lights(this->prog);
-         } else {
-            lighting->load_zero_lights(this->prog);
-         } 
-
          glUniformMatrix4fv(this->prog->getUniform("M"), 1, GL_FALSE, value_ptr(M->topMatrix()));
 
          this->neuron_shape->draw(this->prog);
@@ -532,6 +532,13 @@ void NetworkRenderer::render_layer_connections(unsigned int layer_num,
    float layer_width = this->get_neuron_spacing(layer_info.neuron_props) * (layer_info.size+0);
    float light_range = (layer_width > this->layer_spacing*2) ? layer_width : this->layer_spacing*2;
 
+   if(this->should_light_layer(layer_num)) {
+      //lighting->load_lights_near(this->prog, pos, lights_per_conn, -1);
+      lighting->load_lights(this->prog);
+   } else {
+      lighting->load_zero_lights(this->prog);
+   }
+
    for(int i = 0; i < layer_connections.size(); i++) {
       M->pushMatrix();
 
@@ -543,13 +550,6 @@ void NetworkRenderer::render_layer_connections(unsigned int layer_num,
          M->scale(vec3(conn_info.size, conn_info.length, conn_info.size));
          
          vec3 pos = vec3(M->topMatrix() * vec4(vec3(0), 1));
-
-         if(this->should_light_layer(layer_num)) {
-            lighting->load_lights_near(this->prog, pos, lights_per_conn, -1);
-            //lighting->load_lights(this->prog);
-         } else {
-            lighting->load_zero_lights(this->prog);
-         }
 
          glUniform1f(prog->getUniform("size"), conn_info.size*0.5);
          glUniformMatrix4fv(this->prog->getUniform("M"), 1, GL_FALSE, value_ptr(M->topMatrix()));
